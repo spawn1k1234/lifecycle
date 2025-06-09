@@ -1,39 +1,58 @@
-import React, { useState, useEffect } from "react";
+import React, { Component } from "react";
 import ContactForm from "./components/ContactForm";
 import ContactList from "./components/ContactList";
 import "./App.css";
 
 const LOCAL_STORAGE_KEY = "phonebook_contacts";
 
-function App() {
-  const [contacts, setContacts] = useState([]);
+class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      contacts: [],
+    };
+  }
 
-  useEffect(() => {
+  componentDidMount() {
     const storedContacts = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
     if (storedContacts) {
-      setContacts(storedContacts);
+      this.setState({ contacts: storedContacts });
     }
-  }, []);
+  }
 
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(contacts));
-  }, [contacts]);
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.contacts !== this.state.contacts) {
+      localStorage.setItem(
+        LOCAL_STORAGE_KEY,
+        JSON.stringify(this.state.contacts)
+      );
+    }
+  }
 
-  const addContact = (contact) => {
-    setContacts([...contacts, contact]);
+  addContact = (contact) => {
+    this.setState((prevState) => ({
+      contacts: [...prevState.contacts, contact],
+    }));
   };
 
-  const deleteContact = (id) => {
-    setContacts(contacts.filter((c) => c.id !== id));
+  deleteContact = (id) => {
+    this.setState((prevState) => ({
+      contacts: prevState.contacts.filter((contact) => contact.id !== id),
+    }));
   };
 
-  return (
-    <div className="app">
-      <h1>Телефонна книга</h1>
-      <ContactForm onAdd={addContact} />
-      <ContactList contacts={contacts} onDelete={deleteContact} />
-    </div>
-  );
+  render() {
+    return (
+      <div className="app">
+        <h1>Телефонна книга</h1>
+        <ContactForm onAdd={this.addContact} />
+        <ContactList
+          contacts={this.state.contacts}
+          onDelete={this.deleteContact}
+        />
+      </div>
+    );
+  }
 }
 
 export default App;
